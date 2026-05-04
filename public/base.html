@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Ecopedia | Base de Conhecimento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1e40af;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success-bg: #f0fdf4;
+      --success-border: #22c55e;
+      --success-text: #166534;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    /* HEADER */
+    .header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: var(--primary);
+      color: white;
+      padding: 16px 24px;
+      font-size: 20px;
+      font-weight: 700;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .container {
+      padding: 100px 20px 80px 20px;
+      max-width: 850px;
+      margin: auto;
+    }
+
+    /* BUSCA */
+    .search-container {
+      position: sticky;
+      top: 80px;
+      z-index: 5;
+      background: var(--bg);
+      padding-bottom: 20px;
+    }
+
+    .search {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      font-size: 16px;
+      transition: all 0.2s;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .card-title { font-size: 18px; font-weight: 700; margin: 0; }
+
+    .badge {
+      background: #eff6ff;
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .content-box {
+      background: #f1f5f9;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      border-left: 4px solid #cbd5e1;
+    }
+
+    .content-box.solucao {
+      background: var(--success-bg);
+      border-left-color: var(--success-border);
+      color: var(--success-text);
+    }
+
+    .thumb {
+      width: 180px;
+      border-radius: 8px;
+      cursor: zoom-in;
+      border: 1px solid var(--border);
+    }
+
+    /* FAB BUTTON */
+    .fab {
+      position: fixed;
+      bottom: 30px; right: 30px;
+      width: 60px; height: 60px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      font-size: 30px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 15px rgba(37, 99, 235, 0.4);
+    }
+
+    /* MODAL CADASTRO */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      justify-content: center; align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 32px;
+      border-radius: 20px;
+      width: 90%; max-width: 550px;
+      max-height: 90vh; overflow-y: auto;
+    }
+
+    /* MODAL ZOOM (SCROLL) */
+    .img-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      justify-content: center; align-items: center;
+      z-index: 2000;
+      overflow: hidden;
+      cursor: zoom-out;
+    }
+
+    #imgGrande {
+      max-width: 90%;
+      max-height: 90%;
+      transition: transform 0.1s ease-out;
+      transform-origin: center;
+      user-select: none;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--primary);
+      padding: 20px; text-align: center;
+      background: #f0f7ff; cursor: pointer;
+      border-radius: 12px; margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">📚 Ecopedia</div>
+
+<div class="container">
+  <div class="search-container">
+    <input class="search" id="busca" placeholder="Pesquisar por título ou categoria..." oninput="buscar()">
+  </div>
+  <div id="lista"></div>
+</div>
+
+<button class="fab" onclick="abrirModal()">+</button>
+
+<!-- MODAL CADASTRO -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div style="display:flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2 style="margin:0">Novo Registro</h2>
+        <button onclick="fecharModal()" style="background:none; border:none; font-size:24px; cursor:pointer">×</button>
+    </div>
+    <form id="form">
+      <label class="section-label">Título</label>
+      <input type="text" name="titulo" style="width:100%; padding:10px; margin-bottom:15px;" required>
+      
+      <label class="section-label">Categoria</label>
+      <input type="text" name="categoria" style="width:100%; padding:10px; margin-bottom:15px;">
+
+      <label class="section-label">Descrição</label>
+      <textarea name="descricao" rows="3" style="width:100%; padding:10px; margin-bottom:15px;"></textarea>
+      
+      <label class="section-label">Solução</label>
+      <textarea name="solucao" rows="4" style="width:100%; padding:10px; margin-bottom:15px;"></textarea>
+
+      <div class="upload-box" id="uploadBox">
+        <p style="margin:0; color:var(--primary);">📁 Clique ou cole uma imagem (CTRL+V)</p>
+        <input type="file" name="imagem" id="fileInput" style="display:none;">
+      </div>
+      <img id="preview" style="display:none; width:100%; margin-bottom:15px; border-radius:10px;">
+
+      <button type="submit" style="width:100%; background:var(--primary); color:white; border:none; padding:15px; border-radius:10px; font-weight:bold; cursor:pointer;">SALVAR</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL ZOOM IMAGEM -->
+<div class="img-modal" id="imgModal" onclick="fecharImagem()">
+  <img id="imgGrande" onclick="event.stopPropagation()">
+</div>
+
+<script>
+  let scale = 1;
+  const imgGrande = document.getElementById('imgGrande');
+  const imgModal = document.getElementById('imgModal');
+
+  async function buscar() {
+    const termo = document.getElementById('busca').value;
+    const res = await fetch('/base?busca=' + termo);
+    const lista = await res.json();
+    const div = document.getElementById('lista');
+    div.innerHTML = '';
+
+    lista.forEach(item => {
+      div.innerHTML += `
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">${item.titulo}</h3>
+            ${item.categoria ? `<span class="badge">${item.categoria}</span>` : ''}
+          </div>
+          <span class="section-label">Descrição</span>
+          <div class="content-box">${item.descricao || ''}</div>
+          <span class="section-label">Solução</span>
+          <div class="content-box solucao">${item.solucao || ''}</div>
+          ${item.imagem ? `<img src="${item.imagem}" class="thumb" onclick="abrirImagem('${item.imagem}')">` : ''}
+        </div>
+      `;
+    });
+  }
+
+  /* ZOOM COM SCROLL */
+  imgModal.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const zoomSpeed = 0.1;
+    if (e.deltaY < 0) scale += zoomSpeed;
+    else scale -= zoomSpeed;
+    scale = Math.min(Math.max(0.5, scale), 4);
+    imgGrande.style.transform = `scale(${scale})`;
+  }, { passive: false });
+
+  function abrirImagem(src) {
+    scale = 1;
+    imgGrande.style.transform = `scale(1)`;
+    imgGrande.src = src;
+    imgModal.style.display = 'flex';
+  }
+
+  function fecharImagem() { imgModal.style.display = 'none'; }
+  function abrirModal() { document.getElementById('modal').style.display = 'flex'; }
+  function fecharModal() { document.getElementById('modal').style.display = 'none'; }
+
+  /* FORMULÁRIO */
+  const form = document.getElementById('form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    await fetch('/cadastrar', { method: 'POST', body: formData });
+    form.reset();
+    document.getElementById('preview').style.display = "none";
+    fecharModal();
+    buscar();
+  });
+
+  /* PASTE IMAGE (CTRL+V) */
+  document.addEventListener('paste', (e) => {
+    const items = e.clipboardData.items;
+    for (let item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        const file = item.getAsFile();
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        document.getElementById('fileInput').files = dataTransfer.files;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const prev = document.getElementById('preview');
+          prev.src = event.target.result;
+          prev.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+
+  document.getElementById('uploadBox').onclick = () => document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = (e) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const prev = document.getElementById('preview');
+        prev.src = ev.target.result;
+        prev.style.display = 'block';
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  };
+
+  buscar();
+</script>
+
+</body>
+</html>
